@@ -1,9 +1,7 @@
 import os
 from groq import Groq
 
-client = Groq(
-    api_key=os.getenv("GROQ_API_KEY")
-)
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
 AI_TRIGGER_COMMANDS = [
@@ -34,40 +32,28 @@ Rules:
 
 
 def should_use_ai(command):
-
-    return any(
-        trigger in command
-        for trigger in AI_TRIGGER_COMMANDS
-    )
+    return any(trigger in command for trigger in AI_TRIGGER_COMMANDS)
 
 
 def refine_output(command, output):
-
+    """Refine selected command output; preserve raw output if AI fails."""
     if not should_use_ai(command):
         return output
 
-    response = client.chat.completions.create(
-
-        model="llama-3.1-8b-instant",
-
-        messages=[
-
-            {
-                "role": "system",
-                "content": system_prompt
-            },
-
-            {
-                "role": "user",
-                "content": f"""
-Command:
-{command}
-
-Raw output:
-{output}
-"""
-            }
-        ]
-    )
-
-    return response.choices[0].message.content
+    try:
+        response = client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {
+                    "role": "user",
+                    "content": f"Command:\n{command}\n\nRaw output:\n{output}",
+                },
+            ],
+        )
+        refined = response.choices[0].message.content
+        return refined if refined else output
+    except Exception as exc:
+        # Keep command execution useful even when the API/model is unavailable.
+        print(f"[HyShield AI refinement error] {type(exc).__name__}: {exc}")
+        return output
