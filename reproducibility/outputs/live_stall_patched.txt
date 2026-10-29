@@ -1,0 +1,3 @@
+case=patched
+phase1_errors=0; phase1_rows=3; phase1_eventids=['cowrie.session.connect', 'cowrie.session.closed', 'error.invalid_timestamp']; phase1_checkpoint=260
+phase2_new_errors=0; phase2_rows=4; phase2_eventids=['cowrie.session.connect', 'cowrie.session.closed', 'error.invalid_timestamp', 'cowrie.command.input']; phase2_checkpoint=406; file_size=406; checkpoint_at_eof=True

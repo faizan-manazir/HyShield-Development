@@ -1,0 +1,4 @@
+case=original
+phase1_errors=5; phase1_rows=0; phase1_eventids=[]; phase1_checkpoint=None
+phase2_new_errors=0; phase2_rows=3; phase2_eventids=['cowrie.session.connect', 'cowrie.session.closed', 'cowrie.command.input']; phase2_checkpoint=406; file_size=406; checkpoint_at_eof=True
+first_error=TypeError: can't subtract offset-naive and offset-aware datetimes

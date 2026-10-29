@@ -1,0 +1,7 @@
+condition=ts_naive n= 200
+flag=0/200 (0.0%)
+src_db=51/200 (25.5%)
+baseline=51/200 (25.5%)
+crash=51/200 (25.5%)
+persistent=51/200 (25.5%)
+silent=149/200 (74.5%)

@@ -1,0 +1,4 @@
+Attempted command:
+python run_all.py --siem-dir /mnt/data/verify_siem/python-siem --patched-siem-dir /mnt/data/verify_siem/patch_copy/python-siem --trace '/mnt/data/cowrie(2).json'
+
+Execution outcome: exceeded the 300-second execution limit in this environment. No complete Table 5 PASS is claimed. The full 200-trace timezone-naive condition was run separately for original and patched ingestors; see targeted_ts_naive_original_200.txt and targeted_ts_naive_patched_200.txt.

@@ -1,0 +1,84 @@
+diff -ruN a/python-siem/app/correlation.py b/python-siem/app/correlation.py
+--- a/python-siem/app/correlation.py	2026-10-29 11:02:15.576831063 +0500
++++ b/python-siem/app/correlation.py	2026-10-29 11:02:15.585909066 +0500
+@@ -77,10 +77,12 @@
+ 
+ 
+ def _parse_time(text):
++    """Return a timezone-aware datetime, or None if missing/invalid/timezone-naive."""
+     try:
+-        return datetime.fromisoformat(str(text).replace("Z", "+00:00"))
++        value = datetime.fromisoformat(str(text).replace("Z", "+00:00"))
+     except ValueError:
+         return None
++    return value if value.tzinfo is not None else None
+ 
+ 
+ def risk_level(score):
+diff -ruN a/python-siem/app/ingest.py b/python-siem/app/ingest.py
+--- a/python-siem/app/ingest.py	2026-10-29 11:02:15.577062462 +0500
++++ b/python-siem/app/ingest.py	2026-10-29 11:02:15.586126509 +0500
+@@ -139,6 +139,15 @@
+                 conn.execute(
+                     "INSERT OR IGNORE INTO raw_events VALUES (?,?,?,?,?)",
+                     (event_id, session, event.get("timestamp"), event.get("eventid"), json.dumps(event)))
++                if correlation._parse_time(event.get("timestamp")) is None:
++                    # The event itself is retained unchanged; the marker makes the
++                    # problem visible without aborting the batch.
++                    marker_id = hashlib.sha256(f"{event_id}|invalid_timestamp".encode()).hexdigest()
++                    conn.execute("INSERT OR IGNORE INTO raw_events VALUES (?,?,?,?,?)",
++                                 (marker_id, None, None, "error.invalid_timestamp",
++                                  json.dumps({"error": "Missing, invalid, or timezone-naive timestamp",
++                                              "source_event_id": event_id})))
++                    self.stats["errors"] += 1
+                 if session:
+                     ts = event.get("timestamp")
+                     closed = 1 if event.get("eventid") == "cowrie.session.closed" else 0
+diff -ruN a/python-siem/tests/test_forensic_pipeline_reconciliation.py b/python-siem/tests/test_forensic_pipeline_reconciliation.py
+--- a/python-siem/tests/test_forensic_pipeline_reconciliation.py	2026-10-29 11:02:15.581296946 +0500
++++ b/python-siem/tests/test_forensic_pipeline_reconciliation.py	2026-10-29 11:02:15.590082825 +0500
+@@ -66,7 +66,7 @@
+     assert session["is_closed"] == 1
+ 
+ 
+-def test_missing_and_invalid_timestamps_are_retained_but_not_validated(pipeline):
++def test_missing_and_invalid_timestamps_are_retained_and_flagged(pipeline):
+     ingestor, source = pipeline
+     rows = [
+         event("cowrie.session.connect"),
+@@ -78,13 +78,29 @@
+     ingestor.poll()
+     stored = stored_rows()
+ 
+-    assert len(stored) == 3
+-    assert [row["timestamp"] for row in stored] == [
+-        "2026-10-20T10:00:00Z", None, "not-a-timestamp"
++    originals = [row for row in stored if not row["eventid"].startswith("error.")]
++    markers = [row for row in stored if row["eventid"] == "error.invalid_timestamp"]
++    # Source events are retained unchanged; each bad timestamp adds a marker row.
++    assert [row["timestamp"] for row in originals] == ["2026-10-20T10:00:00Z", None, "not-a-timestamp"]
++    assert len(markers) == 2
++    assert ingestor.stats["errors"] == 2
++
++
++def test_timezone_naive_timestamp_does_not_abort_the_batch(pipeline):
++    ingestor, source = pipeline
++    rows = [
++        event("cowrie.session.connect", "2026-10-20T10:00:00Z"),
++        event("cowrie.session.closed", "2026-10-20T10:00:05"),  # no timezone
+     ]
+-    # This is an observed limitation: ingestion stores these timestamp values
+-    # without rejecting or annotating their invalidity.
+-    assert all(row["eventid"] != "error.malformed" for row in stored)
++    source.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
++
++    ingestor.poll()  # previously raised TypeError and left the checkpoint unchanged
++    stored = stored_rows()
++
++    assert len([row for row in stored if not row["eventid"].startswith("error.")]) == 2
++    assert any(row["eventid"] == "error.invalid_timestamp" for row in stored)
++    with db.connect() as conn:
++        assert conn.execute("SELECT last_offset FROM checkpoints").fetchone()["last_offset"] == source.stat().st_size
+ 
+ 
+ def test_duplicate_event_content_at_different_offsets_is_stored_twice(pipeline):

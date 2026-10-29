@@ -1,0 +1,24 @@
+Comparison checks performed during this verification
+
+1) Synthetic fault CSV:
+   cmp outputs/fault_500.csv scripts/expected/results.csv
+   RESULT: PASS (byte-for-byte identical; exit code 0)
+
+2) Real Cowrie trace output:
+   cmp outputs/real_trace_checks_actual.txt scripts/expected/real_trace_output.txt
+   RESULT: PASS (byte-for-byte identical; exit code 0)
+
+3) Original pytest:
+   python -m pytest -q in extracted original python-siem
+   RESULT: 64 passed
+
+4) Patched pytest:
+   python -m pytest -q in separate copy with timestamp_validation.patch applied
+   RESULT: 65 passed
+
+5) Targeted timezone-naive experiment, n=200:
+   Original: crash=51/200 (25.5%); persistent=51/200 (25.5%).
+   Patched: flag=200/200 (100.0%); crash=0/200; persistent=0/200.
+
+6) Full run_all.py:
+   RESULT: timed out after 300 seconds in this environment. Full Table 5 is not claimed as independently reproduced.

@@ -1,0 +1,16 @@
+fault,description,n,ingestor_flag,src_db_mismatch,baseline_mismatch,poll_exception,exception_persists,silent
+clean,Fault-free copy,20,0.0,0.0,0.0,0.0,0.0,100.0
+append_marker,Append non-JSON marker line,20,100.0,0.0,0.0,0.0,0.0,0.0
+append_forged,Append forged well-formed event,20,0.0,0.0,100.0,0.0,0.0,0.0
+delete_any,Delete one random record,20,0.0,0.0,100.0,0.0,0.0,0.0
+delete_command,Delete one command-input record,20,0.0,0.0,100.0,0.0,0.0,0.0
+duplicate,Duplicate one record,20,0.0,0.0,100.0,0.0,0.0,0.0
+reorder_adjacent,Swap two adjacent records,20,0.0,0.0,0.0,0.0,0.0,100.0
+ts_backward,Timestamp set earlier than predecessor,20,0.0,0.0,0.0,0.0,0.0,100.0
+ts_inorder,"Timestamp altered, order preserved",20,0.0,0.0,0.0,0.0,0.0,100.0
+ts_missing,Timestamp field removed,20,100.0,0.0,0.0,0.0,0.0,0.0
+ts_naive,Timezone removed from timestamp,20,100.0,0.0,0.0,0.0,0.0,0.0
+malformed,Corrupt one JSON line,20,100.0,0.0,100.0,0.0,0.0,0.0
+truncate_midline,Truncate file mid-record,20,0.0,0.0,100.0,0.0,0.0,0.0
+truncate_tail,Remove last 1-3 whole records,20,0.0,0.0,100.0,0.0,0.0,0.0
+edit_content,Change command text (same count),20,0.0,0.0,0.0,0.0,0.0,100.0
