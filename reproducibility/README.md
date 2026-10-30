@@ -14,6 +14,7 @@ This directory contains the experiment scripts, supplied trace, expected referen
 - `scripts/expected/` — expected reference output files used by the harnesses.
 - `inputs/cowrie_supplied_trace.json` — trace input used for the reported real-trace checks.
 - `outputs/` — saved console output, result CSV/JSON files, environment details, and comparisons from the recorded runs.
+- `outputs/live_deployment_session_ebfa405baa78.md` — notes from the 2026-10-30 live Cowrie-to-SIEM session investigation. The dashboard screenshot was supplied in the conversation but is not committed as an image file yet.
 
 ## Requirements and setup
 
