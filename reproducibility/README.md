@@ -14,7 +14,25 @@ This directory contains the experiment scripts, supplied trace, expected referen
 - `scripts/expected/` — expected reference output files used by the harnesses.
 - `inputs/cowrie_supplied_trace.json` — trace input used for the reported real-trace checks.
 - `outputs/` — saved console output, result CSV/JSON files, environment details, and comparisons from the recorded runs.
-- `outputs/live_deployment_session_ebfa405baa78.md` — notes from the 2026-10-30 live Cowrie-to-SIEM session investigation. The dashboard screenshot was supplied in the conversation but is not committed as an image file yet.
+- `outputs/live_deployment_session_ebfa405baa78.md` — detailed notes and interpretation of the 2026-10-30 live deployment screenshots and sessions.
+- `screenshots/` — eight deployment screenshots documenting the Cowrie, SSH, Docker, telemetry, and SIEM views (see the evidence index below).
+
+## Live deployment screenshot index (2026-10-30)
+
+The screenshots below are committed evidence from the running deployment. Select an image to view it at full size.
+
+| Screenshot | What it documents |
+|---|---|
+| [01 — Cowrie service running](screenshots/01_Cowrie_Service_Running.png) | Cowrie process/service status captured during deployment. |
+| [02 — SSH honeypot interaction](screenshots/02_SSH_Honeypot_Interaction.png) | Terminal interaction with the SSH honeypot. |
+| [03 — Docker container running](screenshots/03_Docker_Container_Running.png) | Running `fake-ubuntu` execution container. |
+| [04 — Docker command execution](screenshots/04_Docker_Command_Execution.png) | Commands and environment information observed inside the execution container. |
+| [05 — Cowrie telemetry logs](screenshots/05_Cowrie_Telemetry_Logs.png) | Cowrie JSON telemetry output. |
+| [06 — SIEM session investigation](screenshots/06_SIEM_Session_Investigation.png) | Session `ebfa405baa78`: 58-second localhost SSH session, Medium risk, score 20/100, successful root login, and captured commands. |
+| [07 — SIEM live activity](screenshots/07_SIEM_Live_Activity.png) | Recent telemetry for a separate session, `ea51497b7804`, including command events and closure after 71.4 seconds. |
+| [08 — SIEM Event Explorer](screenshots/08_SIEM_Event_Details.png) | Event Explorer filtered to `ebfa405baa78`, showing event IDs, UTC timestamps, source IP, command inputs, and ATT&CK tags. This is a filtered event list, not an individual event payload view. |
+
+The session IDs in screenshots 06 and 08 (`ebfa405baa78`) and screenshot 07 (`ea51497b7804`) refer to two distinct controlled localhost sessions. Do not combine their timestamps, durations, or command sequences.
 
 ## Requirements and setup
 
@@ -100,5 +118,6 @@ This check exercises the ingestion polling thread with temporary data. It does n
 - `outputs/targeted_ts_naive_original_200.txt` and `outputs/targeted_ts_naive_patched_200.txt` record the targeted 200-trace experiment.
 - `outputs/actual_ingestor_20_original.csv` and `outputs/actual_ingestor_20_patched.csv` are 20-trace smoke samples, not a substitute for a full 200-trace run across all fault conditions.
 - `outputs/live_stall_original.txt` and `outputs/live_stall_patched.txt` record the isolated polling-thread test, not a browser/dashboard test.
+- Screenshots 06–08 show localhost sessions. They demonstrate observed application behavior and telemetry presentation; they do not independently establish event completeness, database-row reconciliation, source authenticity, Docker escape resistance, or legal admissibility.
 
-The trace checks validate calculations over this supplied file; they do not establish that its hash was independently protected before it was provided. Source snapshots are not included, so reproducing source-dependent results requires obtaining the exact corresponding source version. End-to-end dashboard integration and Docker escape resistance were not tested by these artifacts.
+The trace checks validate calculations over this supplied file; they do not establish that its hash was independently protected before it was provided. Source snapshots are not included, so reproducing source-dependent results requires obtaining the exact corresponding source version. The complete fault-injection matrix did not finish within the recorded verification limit.
