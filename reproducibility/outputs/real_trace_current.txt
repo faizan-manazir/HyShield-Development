@@ -1,0 +1,28 @@
+SHA-256      : E95A6EC66561FD302E10C0CF84C76952CDE68C4708B736B67B5B398DEBE465BF
+records      : 109 | malformed: 0 | missing eventid: 0 | bad timestamps: 0
+commands     : 63 | sessions: 6 | timestamp decreases: 0
+time range   : 2026-10-28 07:49:48.890327 to 18:24:36.368456 UTC
+source IPs   : ['127.0.0.1']
+event types  : {'cowrie.command.input': 63, 'cowrie.client.kex': 6, 'cowrie.client.size': 6, 'cowrie.client.var': 6, 'cowrie.client.version': 6, 'cowrie.login.success': 6, 'cowrie.session.closed': 6, 'cowrie.session.connect': 6, 'cowrie.log.closed': 4}
+
+session records commands span_s
+  A      30      23   182.473
+  B      13       6   183.572
+  C      21      13   74.628
+  D      10       2   11.919
+  E      24      16   130.158
+  F      11       3   57.757
+
+modified Session A, first command (line 7); new timestamp 2026-10-28T07:49:50.354924Z (was 2026-10-28T07:49:56.114022Z)
+
+copy-level checks
+  original      E95A6EC66561FD302E10C0CF84C76952CDE68C4708B736B67B5B398DEBE465BF records=109 commands=63 sessions=6 decreases=0 malformed=0 reacted=none
+  append marker 069FD829132D6865BC74C63CB4F770940CE4C1EAE5B79DD5757BD8138571C666 records=109 commands=63 sessions=6 decreases=0 malformed=1 reacted=['structural', 'hash']
+  omission      098D09D2A4487A172A2216618F76B3687773C7500C3793B137599D8189EFFEF4 records=108 commands=62 sessions=6 decreases=0 malformed=0 reacted=['hash', 'counts']
+  timestamp     74352778DEFC624722E0ECC7BCDAE61E586967AF89844457E548679ACB1D3610 records=109 commands=63 sessions=6 decreases=1 malformed=0 reacted=['chronology', 'hash']
+
+ingestor outcomes (real Ingestor.poll into temporary SQLite)
+  original      stored=109 commands=63 sessions=6 error_rows=0 exception=False
+  append marker stored=109 commands=63 sessions=6 error_rows=1 exception=False
+  omission      stored=108 commands=62 sessions=6 error_rows=0 exception=False
+  timestamp     stored=109 commands=63 sessions=6 error_rows=0 exception=False

@@ -41,3 +41,8 @@ venv/
 .venv/
 .pytest_cache/
 __pycache__/
+
+# Local SIEM runtime telemetry
+python-siem/data/
+# Local SIEM runtime telemetry
+python-siem/data/

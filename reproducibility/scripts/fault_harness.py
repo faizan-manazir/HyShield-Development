@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Synthetic fault-injection harness for log-validation checks (HyShield study).
 
@@ -90,10 +89,13 @@ def parse_ts(value):
 
 
 def audit(data):
-    """Read-only audit of raw bytes; returns a dict of measurements."""
+    """Read-only audit with chronology checked separately per session."""
     r = {"sha256": hashlib.sha256(data).hexdigest(), "records": 0, "malformed": 0,
          "missing_eventid": 0, "bad_ts": 0, "decreases": 0, "commands": 0}
-    sessions, prev = set(), None
+
+    sessions = set()
+    previous_by_session = {}
+
     for raw in data.split(b"\n"):
         if not raw.strip():
             continue
@@ -102,23 +104,32 @@ def audit(data):
         except (ValueError, UnicodeDecodeError):
             r["malformed"] += 1
             continue
+
         if not isinstance(obj, dict):
             r["malformed"] += 1
             continue
+
         r["records"] += 1
+
         if not obj.get("eventid"):
             r["missing_eventid"] += 1
+
         if obj.get("eventid") == "cowrie.command.input":
             r["commands"] += 1
-        if obj.get("session"):
-            sessions.add(obj["session"])
+
+        session = obj.get("session")
+        if session:
+            sessions.add(session)
+
         ts = parse_ts(obj.get("timestamp"))
         if ts is None:
             r["bad_ts"] += 1
-        else:
-            if prev is not None and ts < prev:
+        elif session:
+            previous = previous_by_session.get(session)
+            if previous is not None and ts < previous:
                 r["decreases"] += 1
-            prev = ts
+            previous_by_session[session] = ts
+
     r["sessions"] = len(sessions)
     return r
 
@@ -170,24 +181,96 @@ def f_duplicate(rng, L):
     i = rng.randrange(len(L)); return to_bytes(L[:i + 1] + [L[i]] + L[i + 1:])
 
 def f_reorder_adjacent(rng, L):
-    idx = [i for i in range(len(L) - 1) if _ts(L[i]) != _ts(L[i + 1])]
-    i = rng.choice(idx); M = L[:]; M[i], M[i + 1] = M[i + 1], M[i]
+    """Swap consecutive events within one session's event sequence."""
+    by_session = {}
+
+    for i, line in enumerate(L):
+        obj = json.loads(line)
+        session = obj.get("session")
+        if session:
+            by_session.setdefault(session, []).append(i)
+
+    candidates = []
+    for indices in by_session.values():
+        for left, right in zip(indices, indices[1:]):
+            if _ts(L[left]) != _ts(L[right]):
+                candidates.append((left, right))
+
+    if not candidates:
+        return None
+
+    i, j = rng.choice(candidates)
+    M = L[:]
+    M[i], M[j] = M[j], M[i]
     return to_bytes(M)
 
 def f_ts_backward(rng, L):
-    i = rng.randrange(1, len(L)); M = L[:]
-    M[i] = _edit(M[i], timestamp=(_ts(M[i - 1]) - timedelta(milliseconds=5)).strftime(TS_FMT))
+    """Move an event backwards relative to the previous event in its session."""
+    previous_by_session = {}
+    candidates = []
+
+    for i, line in enumerate(L):
+        obj = json.loads(line)
+        session = obj.get("session")
+        ts = _ts(line)
+
+        if not session or ts is None:
+            continue
+
+        if session in previous_by_session:
+            candidates.append((i, previous_by_session[session]))
+
+        previous_by_session[session] = ts
+
+    if not candidates:
+        return None
+
+    i, previous_ts = rng.choice(candidates)
+    M = L[:]
+    M[i] = _edit(
+        M[i],
+        timestamp=(previous_ts - timedelta(milliseconds=5)).strftime(TS_FMT)
+    )
     return to_bytes(M)
 
+
 def f_ts_inorder(rng, L):
-    for _ in range(50):
-        i = rng.randrange(1, len(L) - 1)
-        a, b, c = _ts(L[i - 1]), _ts(L[i]), _ts(L[i + 1])
-        mid = a + (c - a) / 2
-        new = mid.strftime(TS_FMT)
-        if a < mid < c and new != json.loads(L[i])["timestamp"]:
-            M = L[:]; M[i] = _edit(M[i], timestamp=new); return to_bytes(M)
-    return None
+    by_session = {}
+
+    for i, line in enumerate(L):
+        obj = json.loads(line)
+        session = obj.get("session")
+        ts = _ts(line)
+        if session and ts is not None:
+            by_session.setdefault(session, []).append((i, ts))
+
+    candidates = []
+
+    for events in by_session.values():
+        for pos in range(1, len(events) - 1):
+            previous_ts = events[pos - 1][1]
+            current_i, current_ts = events[pos]
+            next_ts = events[pos + 1][1]
+
+            if previous_ts >= next_ts:
+                continue
+
+            mid = previous_ts + (next_ts - previous_ts) / 2
+            new = mid.strftime(TS_FMT)
+            new_ts = parse_ts(new)
+
+            if (new_ts is not None
+                    and previous_ts < new_ts < next_ts
+                    and new != json.loads(L[current_i])["timestamp"]):
+                candidates.append((current_i, new))
+
+    if not candidates:
+        return None
+
+    i, new = rng.choice(candidates)
+    M = L[:]
+    M[i] = _edit(M[i], timestamp=new)
+    return to_bytes(M)
 
 def f_ts_missing(rng, L):
     i = rng.randrange(len(L)); M = L[:]; M[i] = _edit(M[i], timestamp=None)

@@ -1,0 +1,194 @@
+{
+ "seed": 42,
+ "n": 500,
+ "benign_rate": 0.2,
+ "header": [
+  "fault",
+  "description",
+  "n",
+  "structural",
+  "chronology",
+  "hash",
+  "counts",
+  "any_no_baseline",
+  "any_with_baseline"
+ ],
+ "rows": [
+  [
+   "clean",
+   "Fault-free copy (incl. benign order skew)",
+   500,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   "append_marker",
+   "Append non-JSON marker line",
+   500,
+   100.0,
+   0.0,
+   100.0,
+   0.0,
+   100.0,
+   100.0
+  ],
+  [
+   "append_forged",
+   "Append forged well-formed event",
+   500,
+   0.0,
+   0.0,
+   100.0,
+   100.0,
+   0.0,
+   100.0
+  ],
+  [
+   "delete_any",
+   "Delete one random record",
+   500,
+   0.0,
+   0.0,
+   100.0,
+   100.0,
+   0.0,
+   100.0
+  ],
+  [
+   "delete_command",
+   "Delete one command-input record",
+   499,
+   0.0,
+   0.0,
+   100.0,
+   100.0,
+   0.0,
+   100.0
+  ],
+  [
+   "duplicate",
+   "Duplicate one record",
+   500,
+   0.0,
+   0.0,
+   100.0,
+   100.0,
+   0.0,
+   100.0
+  ],
+  [
+   "reorder_adjacent",
+   "Swap two adjacent records",
+   500,
+   0.0,
+   80.2,
+   100.0,
+   0.0,
+   80.2,
+   100.0
+  ],
+  [
+   "ts_backward",
+   "Timestamp set earlier than predecessor",
+   500,
+   0.0,
+   100.0,
+   100.0,
+   0.0,
+   100.0,
+   100.0
+  ],
+  [
+   "ts_inorder",
+   "Timestamp altered, order preserved",
+   500,
+   0.0,
+   0.0,
+   100.0,
+   0.0,
+   0.0,
+   100.0
+  ],
+  [
+   "ts_missing",
+   "Timestamp field removed",
+   500,
+   100.0,
+   0.0,
+   100.0,
+   0.0,
+   100.0,
+   100.0
+  ],
+  [
+   "ts_naive",
+   "Timezone removed from timestamp",
+   500,
+   100.0,
+   0.0,
+   100.0,
+   0.0,
+   100.0,
+   100.0
+  ],
+  [
+   "malformed",
+   "Corrupt one JSON line",
+   500,
+   100.0,
+   0.0,
+   100.0,
+   100.0,
+   100.0,
+   100.0
+  ],
+  [
+   "truncate_midline",
+   "Truncate file mid-record",
+   500,
+   98.0,
+   0.0,
+   100.0,
+   100.0,
+   98.0,
+   100.0
+  ],
+  [
+   "truncate_tail",
+   "Remove last 1-3 whole records",
+   500,
+   0.0,
+   0.0,
+   100.0,
+   100.0,
+   0.0,
+   100.0
+  ],
+  [
+   "edit_content",
+   "Change command text (same count)",
+   499,
+   0.0,
+   0.0,
+   100.0,
+   0.0,
+   0.0,
+   100.0
+  ],
+  [
+   "delete_command_rebaselined",
+   "Command deleted AND baseline recomputed by attacker",
+   499,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ]
+ ]
+}
